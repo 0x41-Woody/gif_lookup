@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container-fluid" id="content_container">
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text">GIF Search:</label>
+            </div>
+            <input id="search_field" type="text"></input>
+            &nbsp;
+            <button id="search_btn" type="button" class="btn btn-dark">Search GIFs</button>
+        </div>
+        <div class="input-group mb-3">
+            <select id="limit_dropdown" class="custom-select col-2 ">
+                    <option value="5">Top 5 Results</option>
+                    <option value="10">Top 10 Results</option>
+                    <option value="25">Top 25 Results</option>
+                    <option value="50">Top 50 Results</option>
+            </select>
+        </div>
+
+        <div class="container-fluid">
+            <div class="row" id="card_container">
+            <!-- <div class="card" style="width: 18rem;">
+                <img class="card-img-top" src="..." alt="Card image cap">
+                <div class="card-body">
+                    <h5 class="card-title">Card title</h5>
+                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                    <a href="#" class="btn btn-primary">Go somewhere</a>
+                </div>
+            </div> -->
+            </div>
+        </div>
+        <!-- <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">GIF</th>
+                    <th scope="col">URL</th>
+                </tr>
+            </thead>
+            <tbody id="table_body_frame"></tbody>
+        </table> -->
+    </div>
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.1.0/handlebars.min.js"></script>
+    <script>
+        var BASE_URL = "https://api.giphy.com/v1/gifs/search";
+        var API_KEY = "ZXx0pDhD7syQt9z2lee6G0183auSlcHz";
+
+        var content_container;
+        var search_field;
+        var search_btn;
+        var table_body_frame;
+        var limit_dropdown;
+        var card_container;
+
+        $(document).ready(function() {
+            card_temp = Handlebars.compile($("#gif_card_template").html());
+            content_container = $("#content_container");
+            search_field = content_container.find("#search_field");
+            search_btn = content_container.find("#search_btn");
+            limit_dropdown = content_container.find("#limit_dropdown");
+            table_body_frame = content_container.find("#table_body_frame");
+            card_container = content_container.find("#card_container");
+
+            search_btn.click(api_search);
+        });
+
+        function api_search(e){
+            if(e){
+                e.preventDefault();
+            }
+
+            var search_query = search_field.val();
+            console.log(search_query);
+            var result_limit = limit_dropdown.children("option:selected").val();
+            console.log(result_limit);
+            giphy_set_search(search_query, result_limit).done(function(response){
+                var results = response.data;
+                console.log(results);
+                // results.forEach(result => {
+                //     var bitly_url = result.bitly_url;
+                //     var gif_url = result.images.preview_gif.url;
+                //     table_body_frame.append("<tr><td><img src=\""+gif_url+"\"></img></td><td><a href=\""+bitly_url+"\">"+bitly_url+"</a></td></tr>");
+                // });
+                card_container.append(card_temp(results));
+            })
+        }
+
+        function giphy_set_search(search_query, result_limit){
+            return $.ajax({
+                url : BASE_URL+"?api_key="+API_KEY+"&q="+search_query+"&limit="+result_limit,
+                method : 'GET'
+            });
+        }
+    </script>
+    <script id="gif_card_template" type="text/x-handlebars-template">
+        {{#each this}}
+        <div class="col-auto m-auto" style="max-width: 18rem;">
+            <div class="card text-center text-white bg-secondary border-dark mx-auto">
+                <img class="card-img-top" src="{{images.original.url}}" alt="Card image cap" style="width: 100%;height: 15vw;object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title">{{title}}</h5>
+                    <a href="{{bitly_url}}" class="btn btn-dark">GIPHY Link</a>
+                </div>
+            </div>
+        </div>
+        {{/each}}
+    </script>
+</body>
+</html>
